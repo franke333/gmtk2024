@@ -38,11 +38,6 @@ public class UIActiveAbility : MonoBehaviour
         abilityImage.color = onCooldown ? cooldownColor : Color.white;
         abilityImage.fillAmount = progress;
 
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-                WarnOnCooldown();
-        }
-
     }
 
     public void WarnOnCooldown()

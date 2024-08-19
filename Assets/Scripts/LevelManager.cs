@@ -17,64 +17,42 @@ public class LevelManager : SingletonClass<LevelManager>
     [Header("Levels Stats")]
     public List<LevelStats> levelsStats;
 
-    public GameObject[,] background;
+    public Material worldMaterial;
+
+    public NPCController finalBoss;
+    public NPCController finalBossInstance;
 
     public float minRange = 10f;
     public float maxRange = 15f;
 
+    public List<FoliageSprites> foliageSprites;
+
     // Start is called before the first frame update
 
-    public void SpawnBackground(float scale)
-    {
-        if (background == null)
-        {
-            GameObject MAP = GameObject.Find("MAP");
-            background = new GameObject[200, 200];
-            for (int i = 0; i < 200; i++)
-            {
-                for (int j = 0; j < 200; j++)
-                {
-                    var go = new GameObject();
-                    go.transform.position = new Vector3(i * scale - 50, j * scale - 50, 0);
-                    go.transform.parent = MAP.transform;
-                    var sr = go.AddComponent<SpriteRenderer>();
-                    sr.sprite = square;
-                    sr.color = (i + j) % 2 == 0 ? new Color(0.5f,0.7f,0.3f) : new Color(0.4f, 0.2f, 0.8f);
-                    sr.sortingOrder = -10;
-                    go.transform.localScale = new Vector3(scale, scale, 1);
-                    background[i, j] = go;
-                }
-            }
-            return;
-        }
-        for (int i = 0; i < 100; i++)
-        {
-            for (int j = 0; j < 100; j++)
-            {
-                background[i, j].transform.position = new Vector3(i * scale - 50, j * scale - 50, 0);
-                background[i, j].transform.localScale = new Vector3(scale, scale, 1);
 
-            }
-        }
+
+    public Sprite GetFoliage()
+    {
+        int level = CatController.Instance.massLevel;
+        return foliageSprites[level].sprites[Random.Range(0, foliageSprites[level].sprites.Count)];
     }
 
     public void ManageNewLevel()
     {
         int level = CatController.Instance.massLevel;
-        switch (level)
+
+        //TODO update foliage
+        float target = 6_000 * Mathf.Pow(2f, level);
+        worldMaterial.SetFloat("_Scale", target);
+        worldMaterial.SetInt("_Stars", 0);
+        FoliageScript.Respawn();
+        if (level == 7)
         {
-            case 0:
-                SpawnBackground(4);
-                break;
-            case 1:
-                SpawnBackground(2);
-                break;
-            case 2:
-                SpawnBackground(1);
-                break;
-            case 3:
-                SpawnBackground(0.5f);
-                break;
+            worldMaterial.SetFloat("_Scale", 100000);
+            worldMaterial.SetInt("_Stars", 1);
+            worldMaterial.SetColor("_Color1", Color.black);
+            worldMaterial.SetColor("_Color2", new Color(0.05f,0.05f,0.05f));
+            worldMaterial.SetColor("_Ground", Color.black);
         }
 
         foodNPCs = levelsStats[level].foodNPCs;
@@ -117,6 +95,21 @@ public class LevelManager : SingletonClass<LevelManager>
             SpawnNpc(npc,true);
         }
 
+        if(level >= 6)
+        {   if(level == 6)
+                AudioManager.Instance.StartBossMusic();
+            if(finalBossInstance != null)
+                Destroy(finalBossInstance.gameObject);
+            finalBossInstance = Instantiate(finalBoss);
+            finalBossInstance.transform.position = CatController.Instance.transform.position + Vector3.right * 8;
+            if (level == 7)
+            {
+                finalBossInstance.isHunter = false;
+                finalBossInstance.transform.localScale = Vector3.one * 0.05f;
+
+                StartCoroutine(CatController.Instance.WinSequence());
+            }
+        }
     }
 
     void Start()
@@ -125,7 +118,18 @@ public class LevelManager : SingletonClass<LevelManager>
         npcsHunt = new List<NPCController>();
 
         ManageNewLevel();
+        worldMaterial.SetFloat("_Scale", 6_000);
 
+        worldMaterial.SetColor("_Color1", new Color(0.27058f, 0.3333f, 0.129411f));
+        worldMaterial.SetColor("_Color2", new Color(0.4352f, 0.415f, 0.17f));
+        worldMaterial.SetColor("_Ground", new Color(0.4117f, 0.309f, 0.1607f));
+
+        FoliageScript.instances = new List<FoliageScript>();
+        for (int i = 0; i < 20; i++)
+        {
+            new GameObject().AddComponent<SpriteRenderer>().gameObject.AddComponent<FoliageScript>();
+        }
+        FoliageScript.Respawn();
     }
     
     private void SpawnNpc(NPCController npc, bool hunter)
@@ -195,4 +199,10 @@ public class LevelStats
     public int foodNPCs;
     public int hunterNPCs;
     //TODO background :)
+}
+
+[System.Serializable]
+public class FoliageSprites
+{
+    public List<Sprite> sprites;
 }

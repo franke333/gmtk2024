@@ -6,7 +6,7 @@ public class DashAbility : ActiveAbility
 {
     protected override void ActivateAbility()
     {
-       PlayerMovementController playerMovementController = GetComponent<PlayerMovementController>();
+       PlayerMovementController playerMovementController = PlayerMovementController.Instance;
         Vector2 dir = playerMovementController.GetVelocity();
         if(dir.magnitude ==0)
         {

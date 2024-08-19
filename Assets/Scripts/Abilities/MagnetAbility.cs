@@ -10,21 +10,21 @@ public class MagnetAbility : ActiveAbility
 
     protected override void ActivateAbility()
     {
-        CatController catController = GetComponent<CatController>();
+        CatController catController = CatController.Instance;
         foreach (var npc in LevelManager.Instance.npcsFood)
         {
-            if (Vector2.Distance(npc.transform.position, transform.position) < range)
+            if (Vector2.Distance(npc.transform.position, catController.transform.position) < range)
             {
-                Vector2 dir = (npc.transform.position - transform.position).normalized;
+                Vector2 dir = (npc.transform.position - catController.transform.position).normalized;
                 npc.transform.DOLocalMove(-dir, 0.4f).SetRelative(true);
             }
         }
         // move away hunters
         foreach (var npc in LevelManager.Instance.npcsHunt)
         {
-            if (Vector2.Distance(npc.transform.position, transform.position) < range)
+            if (Vector2.Distance(npc.transform.position, catController.transform.position) < range)
             {
-                Vector2 dir = (npc.transform.position - transform.position).normalized;
+                Vector2 dir = (npc.transform.position - catController.transform.position).normalized;
                 npc.transform.DOLocalMove(2*dir, 0.4f).SetRelative(true);
             }
         }

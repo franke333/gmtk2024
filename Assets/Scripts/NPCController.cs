@@ -9,9 +9,12 @@ public class NPCController : MonoBehaviour
     public int food = 1;
 
     public bool flipHorizontal = false;
+    public bool stun = false;
 
     private void Update()
     {
+        if(stun)
+            return;
         Vector3 ogPos = transform.position;
         Vector3 target = new Vector3(CatController.Instance.transform.position.x, CatController.Instance.transform.position.y, transform.position.z);
         if (isHunter)
@@ -41,5 +44,12 @@ public class NPCController : MonoBehaviour
             else if(delta.y < 0)
                 sr.flipY = true;
         }
+    }
+
+    public IEnumerator Stun(float time)
+    {
+        stun = true;
+        yield return new WaitForSeconds(time);
+        stun = false;
     }
 }

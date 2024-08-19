@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +10,8 @@ public abstract class ActiveAbility : MonoBehaviour
     public Sprite spriteIcon;
 
     public bool IsReady => currentCooldown <= 0f;
+
+    private bool ableToUse = false;
 
     private void Start()
     {
@@ -32,7 +33,10 @@ public abstract class ActiveAbility : MonoBehaviour
 
     public void LockIn()
     {
+        AudioManager.Instance.PlayCardSelection();
+
         uiActiveAbility = UIActiveAbility.InstanceActive;
+        ableToUse = true;
         Debug.Log(uiActiveAbility);
         uiActiveAbility.gameObject.SetActive(true);
         uiActiveAbility.abilityImage.sprite= spriteIcon;
@@ -52,6 +56,9 @@ public abstract class ActiveAbility : MonoBehaviour
 
     private void Update()
     {
+        if(!ableToUse)
+            return;
+
         if (currentCooldown > 0f)
         {
             currentCooldown -= Time.deltaTime;
